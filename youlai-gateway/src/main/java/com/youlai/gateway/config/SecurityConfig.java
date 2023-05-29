@@ -2,8 +2,8 @@ package com.youlai.gateway.config;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -15,36 +15,27 @@ import java.util.List;
  * Security 安全配置
  *
  * @author haoxr
- * @date 2022/8/28
+ * @since 2022/8/28
  */
-@ConfigurationProperties(prefix = "security")
+@Configuration
 @EnableWebFluxSecurity
 @Slf4j
-public class OAuth2ClientSecurityConfig {
+public class SecurityConfig {
 
     @Setter
     private List<String> ignoreUrls;
 
-
     @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http
-    ) {
-        if (ignoreUrls == null) {
-            log.error("failed to read ignoreUrls configuration,please check your nacos connection or configuration!");
-        }
-
+    public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity  http) throws Exception {
         http
-                // 请求鉴权配置
-                .authorizeExchange(authorizeExchangeSpec ->
-                        authorizeExchangeSpec
+                .authorizeExchange(exchangeSpec ->
+                        exchangeSpec
                                 .pathMatchers("/**").permitAll()
                                 .anyExchange().authenticated()
                 )
-                // 禁用csrf token安全校验
-                .csrf().disable();
+                .csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
     }
-
 
 
 }
