@@ -37,3 +37,17 @@ jre
 .project
 test/resources/projects/**/.vscode
 test/resources/projects/maven/salut/testGradle
+
+
+
+*.local
+.history
+
+# Editor directories and files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+package-lock.json
+pnpm-lock.yaml
