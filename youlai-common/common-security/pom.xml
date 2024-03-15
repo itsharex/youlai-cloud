@@ -5,7 +5,7 @@
     <parent>
         <artifactId>youlai-common</artifactId>
         <groupId>com.youlai</groupId>
-        <version>3.0.0</version>
+        <version>0.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,6 +17,12 @@
     </properties>
 
     <dependencies>
+        <!-- OAuth2 Resource Server -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.youlai</groupId>
             <artifactId>common-core</artifactId>
@@ -26,7 +32,6 @@
             <groupId>com.youlai</groupId>
             <artifactId>common-redis</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -39,11 +44,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- OAuth2 Resource Server -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-        </dependency>
-
     </dependencies>
+
 </project>

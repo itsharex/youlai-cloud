@@ -2,28 +2,36 @@ package com.youlai.common.constant;
 
 public interface RedisConstants {
 
-    String BUSINESS_NO_PREFIX = "business_no:";
+    /**
+     * 黑名单TOKEN Key前缀
+     */
+    String TOKEN_BLACKLIST_PREFIX = "token:blacklist:";
 
     /**
-     * 优惠券码KEY前缀
+     * 图形验证码key前缀
      */
-    String SMS_COUPON_TEMPLATE_CODE_KEY = "sms_coupon_template_code_";
+    String CAPTCHA_CODE_PREFIX = "captcha_code:";
 
     /**
-     * 用户当前所有可用优惠券key
+     * 登录短信验证码key前缀
      */
-    String SMS_USER_COUPON_USABLE_KEY = "sms_user_coupon_usable_";
+    String LOGIN_SMS_CODE_PREFIX = "sms_code:login";
 
     /**
-     * 用户当前所有已使用优惠券key
+     * 注册短信验证码key前缀
      */
-    String SMS_USER_COUPON_USED_KEY = "sms_user_coupon_used_";
+    String REGISTER_SMS_CODE_PREFIX = "sms_code:register";
+
 
     /**
-     * 用户当前所有已过期优惠券key
+     * 角色和权限缓存前缀
      */
-    String SMS_USER_COUPON_EXPIRED_KEY = "sms_user_coupon_expired_";
+    String ROLE_PERMS_PREFIX = "role_perms:";
 
 
+    /**
+     * JWT 密钥对(包含公钥和私钥)
+     */
+    String JWK_SET_KEY = "jwk_set";
 
 }

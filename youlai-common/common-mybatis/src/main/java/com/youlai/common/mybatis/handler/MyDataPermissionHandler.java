@@ -5,37 +5,43 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.extension.plugins.handler.DataPermissionHandler;
 import com.youlai.common.base.IBaseEnum;
-import com.youlai.common.enums.DataScopeEnum;
+import com.youlai.common.mybatis.enums.DataScopeEnum;
 import com.youlai.common.mybatis.annotation.DataPermission;
 import com.youlai.common.security.util.SecurityUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 
 import java.lang.reflect.Method;
 
 /**
- * 部门数据权限
+ * 数据权限控制器
  *
- * @author <a href="mailto:2256222053@qq.com">zc</a>
- * @Date 2021-12-10 13:28
+ * @author zc
+ * @since 2021-12-10 13:28
  */
 @Slf4j
 public class MyDataPermissionHandler implements DataPermissionHandler {
+
     @Override
     @SneakyThrows
     public Expression getSqlSegment(Expression where, String mappedStatementId) {
-        // 超级管理员不受数据权限控制
-        if (SecurityUtils.isRoot()) {
-            return where;
-        }
+
         Class<?> clazz = Class.forName(mappedStatementId.substring(0, mappedStatementId.lastIndexOf(StringPool.DOT)));
         String methodName = mappedStatementId.substring(mappedStatementId.lastIndexOf(StringPool.DOT) + 1);
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
             DataPermission annotation = method.getAnnotation(DataPermission.class);
+            // 没有注解，不进行数据权限过滤
+            if (annotation == null) {
+                return where;
+            }
+            // 超级管理员不受数据权限控制
+            if (SecurityUtils.isRoot()) {
+                return where;
+            }
             if (ObjectUtils.isNotEmpty(annotation)
                     && (method.getName().equals(methodName) || (method.getName() + "_COUNT").equals(methodName))) {
                 return dataScopeFilter(annotation.deptAlias(), annotation.deptIdColumnName(), annotation.userAlias(), annotation.userIdColumnName(), where);
@@ -79,7 +85,7 @@ public class MyDataPermissionHandler implements DataPermissionHandler {
             // 默认部门及子部门数据权限
             default -> {
                 deptId = SecurityUtils.getDeptId();
-                appendSqlStr = deptColumnName + " IN ( SELECT id FROM sys_dept WHERE id = " + deptId + " OR FIND_IN_SET( " + deptId + " , tree_path ) )";
+                appendSqlStr = deptColumnName + " IN ( SELECT id FROM sys_dept WHERE id = " + deptId + " or find_in_set( " + deptId + " , tree_path ) )";
             }
         }
 

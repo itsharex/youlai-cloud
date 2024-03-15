@@ -1,7 +1,7 @@
 package com.youlai.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.youlai.system.pojo.entity.SysRole;
+import com.youlai.system.model.entity.SysRole;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Set;
@@ -16,5 +16,5 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
      * @param roles
      * @return
      */
-    Integer getMaximumDataScope(Set<String> roles);
+    Integer getMaxDataRangeDataScope(Set<String> roles);
 }

@@ -1,10 +1,9 @@
 package com.youlai.common.security.util;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.StrUtil;
-import com.youlai.common.constant.GlobalConstants;
+import com.youlai.common.constant.SystemConstants;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
@@ -13,11 +12,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Spring Security 工具类
+ *
+ * @author Ray Hao
+ * @since 2.1.0
+ */
 public class SecurityUtils {
 
     public static Long getUserId() {
-        Long userId = Convert.toLong(getTokenAttributes().get("userId"));
-        return userId;
+        return Convert.toLong(getTokenAttributes().get("userId"));
     }
 
     public static String getUsername() {
@@ -32,18 +36,15 @@ public class SecurityUtils {
     }
 
 
+    /**
+     * 获取用户角色集合
+     */
     public static Set<String> getRoles() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Set roles;
-        if (CollectionUtil.isNotEmpty(authentication.getAuthorities())) {
-            roles = authentication.getAuthorities()
-                    .stream()
-                    .map(item -> StrUtil.removePrefix(item.getAuthority(), "ROLE_")).collect(Collectors.toSet());
-        } else {
-            roles = Collections.EMPTY_SET;
-        }
-        return roles;
+        return AuthorityUtils.authorityListToSet(authentication.getAuthorities())
+                .stream()
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
     }
 
     /**
@@ -54,14 +55,34 @@ public class SecurityUtils {
     }
 
     public static boolean isRoot() {
-        return getRoles().contains(GlobalConstants.ROOT_ROLE_CODE);
+        return getRoles().contains(SystemConstants.ROOT_ROLE_CODE);
     }
 
     public static String getJti() {
         return String.valueOf(getTokenAttributes().get("jti"));
     }
 
+
+    public static Long getExp() {
+        return Convert.toLong(getTokenAttributes().get("exp"));
+    }
+
+    /**
+     * 获取数据权限范围
+     *
+     * @return 数据权限范围
+     * @see com.youlai.common.mybatis.enums.DataScopeEnum
+     */
     public static Integer getDataScope() {
         return Convert.toInt(getTokenAttributes().get("dataScope"));
+    }
+
+    /**
+     * 获取会员ID
+     *
+     * @return 会员ID
+     */
+    public static Long getMemberId() {
+        return Convert.toLong(getTokenAttributes().get("memberId"));
     }
 }

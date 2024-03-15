@@ -5,28 +5,35 @@
     <parent>
         <artifactId>youlai-system</artifactId>
         <groupId>com.youlai</groupId>
-        <version>3.0.0</version>
+        <version>0.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>system-boot</artifactId>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <service.port>8800</service.port>
+        <service.nodeport>32004</service.nodeport>
     </properties>
 
     <dependencies>
-        <!--Spring Cloud & Alibaba-->
+
+        <!-- Spring Cloud & Alibaba -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
         </dependency>
 
-        <!-- 注册中心-->
+        <!-- 注册中心 -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jsr305</artifactId>
+                    <groupId>com.google.code.findbugs</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -40,26 +47,42 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
 
-        <!-- 接口文档 -->
+        <!-- Sentinel流量控制、熔断降级 -->
         <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
         </dependency>
 
-        <!-- common 依赖 -->
+        <!-- Sentinel规则持久化至Nacos配置 -->
         <dependency>
-            <groupId>com.youlai</groupId>
-            <artifactId>common-web</artifactId>
+            <groupId>com.alibaba.csp</groupId>
+            <artifactId>sentinel-datasource-nacos</artifactId>
+        </dependency>
+
+        <!-- 分布式对象存储 -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.youlai</groupId>
-            <artifactId>common-security</artifactId>
+            <artifactId>system-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.youlai</groupId>
-            <artifactId>common-log</artifactId>
+            <artifactId>common-redis</artifactId>
         </dependency>
 
         <dependency>
@@ -69,43 +92,37 @@
 
         <dependency>
             <groupId>com.youlai</groupId>
-            <artifactId>common-redis</artifactId>
+            <artifactId>common-security</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>easyexcel</artifactId>
-        </dependency>
-
-        <!-- feign api 依赖 -->
         <dependency>
             <groupId>com.youlai</groupId>
-            <artifactId>system-api</artifactId>
+            <artifactId>common-apidoc</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
+            <groupId>com.youlai</groupId>
+            <artifactId>common-sms</artifactId>
         </dependency>
 
+        <!-- 单元测试 -->
         <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.minio</groupId>
-            <artifactId>minio</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
 
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+            </plugin>
+        </plugins>
+    </build>
 
-    <repositories>
-        <repository>
-            <id>nexus-maven</id>
-            <name>nexus-maven</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </repository>
-    </repositories>
 </project>

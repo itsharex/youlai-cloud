@@ -1,33 +1,43 @@
 server:
   port: 9999
 
-
 spring:
   main:
     allow-bean-definition-overriding: true
-  mvc:
-    path-match:
-      matching-strategy: ant_path_matcher
   cloud:
     nacos:
       # 注册中心
       discovery:
         server-addr: http://localhost:8848
-        username: nacos
-        password: nacos
+        namespace: youlai-cloud
       # 配置中心
       config:
         server-addr: http://localhost:8848
+        namespace: youlai-cloud
         file-extension: yaml
         shared-configs[0]:
           data-id: youlai-common.yaml
           refresh: true
-        username: nacos
-        password: nacos
-logging:
-  level:
-    root: INFO
-    org.springframework.web: INFO
-    org.springframework.security: TRACE
-    org.springframework.security.oauth2: TRACE
-    #org.springframework.boot.autoconfigure: DEBUG
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://127.0.0.1:9000
+      client:
+        registration:
+          messaging-client-oidc:
+            # 认证提供者，和provider中的名称对应
+            provider: custom-issuer
+            client-id: messaging-client
+            client-secret: 123456
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: authorization_code
+            # 授权成功后的回调地址，Spring Security Client 使用 Code 换 Token 的地址
+            redirect-uri: http://127.0.0.1:9999/login/oauth2/code/messaging-client-oidc
+            scope: openid, profile
+            client-name: messaging-client-oidc
+        provider:
+          custom-issuer:
+            issuer-uri: http://127.0.0.1:9000
+            # user-info-uri: http://127.0.0.1:9000/userinfo
+            # user-name-attribute: name

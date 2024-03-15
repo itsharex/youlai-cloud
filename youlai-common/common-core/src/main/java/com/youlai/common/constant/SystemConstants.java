@@ -4,14 +4,15 @@ package com.youlai.common.constant;
  * 系统常量
  *
  * @author haoxr
- * @date 2021/10/30 9:32
+ * @since 2021/10/30
  */
 public interface SystemConstants {
 
     /**
-     * 根ID
+     * 根部门ID
      */
-    Long ROOT_NODE_ID = 0l;
+    Long ROOT_NODE_ID = 0L;
+
 
     /**
      * 系统默认密码

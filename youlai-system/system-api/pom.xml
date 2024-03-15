@@ -5,19 +5,14 @@
     <parent>
         <artifactId>youlai-system</artifactId>
         <groupId>com.youlai</groupId>
-        <version>3.0.0</version>
+        <version>0.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>system-api</artifactId>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-    </properties>
-
-
     <dependencies>
+
         <dependency>
             <groupId>com.youlai</groupId>
             <artifactId>common-core</artifactId>
@@ -29,22 +24,21 @@
         </dependency>
 
         <dependency>
-            <groupId>com.youlai</groupId>
-            <artifactId>common-security</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- openfeign依赖  -->
+        <!-- openfeign依赖 1. http客户端选择okhttp 2. loadbalancer替换ribbon -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
-    </dependencies>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-okhttp</artifactId>
+        </dependency>
 
+    </dependencies>
 </project>

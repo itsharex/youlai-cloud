@@ -4,7 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.youlai.system.mapper.SysUserRoleMapper;
-import com.youlai.system.pojo.entity.SysUserRole;
+import com.youlai.system.model.entity.SysUserRole;
 import com.youlai.system.service.SysUserRoleService;
 import org.springframework.stereotype.Service;
 
@@ -66,5 +66,17 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
         }
         return true;
 
+    }
+
+    /**
+     * 判断角色是否存在绑定的用户
+     *
+     * @param roleId 角色ID
+     * @return true：已分配 false：未分配
+     */
+    @Override
+    public boolean hasAssignedUsers(Long roleId) {
+        int count = this.baseMapper.countUsersForRole(roleId);
+        return count > 0;
     }
 }

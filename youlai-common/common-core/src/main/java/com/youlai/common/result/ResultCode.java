@@ -6,8 +6,10 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
+ * 自定义响应码
+ *
  * @author haoxr
- * @date 2020-06-23
+ * @since 2020-06-23
  **/
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,8 +18,6 @@ public enum ResultCode implements IResultCode, Serializable {
     SUCCESS("00000", "一切ok"),
 
     USER_ERROR("A0001", "用户端错误"),
-
-    REPEAT_SUBMIT_ERROR("A0002", "您的请求已提交，请不要重复提交或等待片刻再尝试。"),
     USER_LOGIN_ERROR("A0200", "用户登录异常"),
 
     USER_NOT_EXIST("A0201", "用户不存在"),
@@ -27,13 +27,13 @@ public enum ResultCode implements IResultCode, Serializable {
     USERNAME_OR_PASSWORD_ERROR("A0210", "用户名或密码错误"),
     PASSWORD_ENTER_EXCEED_LIMIT("A0211", "用户输入密码次数超限"),
     CLIENT_AUTHENTICATION_FAILED("A0212", "客户端认证失败"),
-    INVALID_TOKEN("A0230", "token无效或已过期"),
+    TOKEN_INVALID("A0230", "token无效或已过期"),
     TOKEN_ACCESS_FORBIDDEN("A0231", "token已被禁止访问"),
 
     AUTHORIZED_ERROR("A0300", "访问权限异常"),
     ACCESS_UNAUTHORIZED("A0301", "访问未授权"),
-    FORBIDDEN_OPERATION("A0302", "演示环境禁止修改、删除重要数据，请本地部署后测试"),
-
+    FORBIDDEN_OPERATION("A0302", "演示环境禁止新增、修改和删除重要数据，请本地部署后测试"),
+    REPEAT_SUBMIT_ERROR("A0303", "您的请求已提交，请不要重复提交或等待片刻再尝试。"),
 
     PARAM_ERROR("A0400", "用户请求参数错误"),
     RESOURCE_NOT_FOUND("A0401", "请求资源不存在"),
@@ -48,7 +48,7 @@ public enum ResultCode implements IResultCode, Serializable {
     SYSTEM_EXECUTION_TIMEOUT("B0100", "系统执行超时"),
     SYSTEM_ORDER_PROCESSING_TIMEOUT("B0100", "系统订单处理超时"),
 
-    SYSTEM_DISASTER_RECOVERY_TRIGGER("B0200", "系统容灾功能被出发"),
+    SYSTEM_DISASTER_RECOVERY_TRIGGER("B0200", "系统容灾功能被触发"),
     FLOW_LIMITING("B0210", "系统限流"),
     DEGRADATION("B0220", "系统功能降级"),
 
