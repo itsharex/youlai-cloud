@@ -45,7 +45,7 @@ public class OpenApiConfig {
      * OpenAPI 配置（元信息、安全协议）
      */
     @Bean
-    public OpenAPI apiInfo() {
+    public OpenAPI openAPI() {
         return new OpenAPI()
                 .components(new Components()
                         .addSecuritySchemes(HttpHeaders.AUTHORIZATION,

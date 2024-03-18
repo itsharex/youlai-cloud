@@ -1,4 +1,5 @@
 
+
 package com.youlai.auth.config;
 
 import cn.hutool.captcha.generator.CodeGenerator;
@@ -97,46 +98,19 @@ public class AuthorizationServerConfig {
 
     private final CorsFilter corsFilter;
 
-
-    @Bean
-    public SecurityFilterChain authorizationServerSecurityFilterChain(
-            HttpSecurity http,
-            RegisteredClientRepository registeredClientRepository,
-            AuthorizationServerSettings authorizationServerSettings
-    ) throws Exception {
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-
-        http
-                // 当用户未登录且尝试访问需要认证的端点时，重定向至登录页面
-                .exceptionHandling((exceptions) -> exceptions
-                        .defaultAuthenticationEntryPointFor(
-                                new LoginTargetAuthenticationEntryPoint(customSecurityProperties.getLoginUrl()),
-                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-                        )
-                );
-
-        http.addFilter(corsFilter);
-        http.csrf(AbstractHttpConfigurer::disable);
-
-        DefaultSecurityFilterChain securityFilterChain = http.build();
-
-        return securityFilterChain;
-    }
-
-
     /**
      * 授权服务器端点配置
-     *//*
+     */
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(
-            HttpSecurity http,
-            AuthenticationManager authenticationManager,
-            OAuth2AuthorizationService authorizationService,
-            OAuth2TokenGenerator<?> tokenGenerator
+            HttpSecurity http
 
     ) throws Exception {
 
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+
+        http.addFilter(corsFilter);
+        http.csrf(AbstractHttpConfigurer::disable);
 
         http
                 // 当用户未登录且尝试访问需要认证的端点时，重定向至登录页面
@@ -147,14 +121,11 @@ public class AuthorizationServerConfig {
                         )
                 );
 
-        http.addFilter(corsFilter);
-        http.csrf(AbstractHttpConfigurer::disable);
-
-        DefaultSecurityFilterChain securityFilterChain = http.build();
-
+        PasswordAuthenticationProvider passwordProvider = new PasswordAuthenticationProvider();
+        CaptchaAuthenticationProvider captchaProvider = new CaptchaAuthenticationProvider();
+        CustomOidcAuthenticationProvider oidcProvider = new CustomOidcAuthenticationProvider();
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-
                 // 自定义用户确认授权页
                 .authorizationEndpoint(authorizationEndpoint -> {
                     String consentPageUri = customSecurityProperties.getConsentPageUri();
@@ -182,8 +153,8 @@ public class AuthorizationServerConfig {
                                         // 自定义授权模式提供者(Provider)
                                         authenticationProviders.addAll(
                                                 List.of(
-                                                        new PasswordAuthenticationProvider(authenticationManager, authorizationService, tokenGenerator),
-                                                        new CaptchaAuthenticationProvider(authenticationManager, authorizationService, tokenGenerator, redisTemplate, codeGenerator)
+                                                        passwordProvider,
+                                                        captchaProvider
                                                 )
                                         )
                         )
@@ -195,14 +166,33 @@ public class AuthorizationServerConfig {
                         oidcCustomizer.userInfoEndpoint(userInfoEndpointCustomizer ->
                                 {
                                     userInfoEndpointCustomizer.userInfoRequestConverter(new CustomOidcAuthenticationConverter(customOidcUserInfoService));
-                                    userInfoEndpointCustomizer.authenticationProvider(new CustomOidcAuthenticationProvider(authorizationService));
+                                    userInfoEndpointCustomizer.authenticationProvider(oidcProvider);
                                 }
                         )
                 );
 
+        DefaultSecurityFilterChain securityFilterChain = http.build();
+
+        OAuth2TokenGenerator<?> tokenGenerator = http.getSharedObject(OAuth2TokenGenerator.class);
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+        OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
+
+        passwordProvider.setTokenGenerator(tokenGenerator);
+        passwordProvider.setAuthorizationService(authorizationService);
+        passwordProvider.setAuthenticationManager(authenticationManager);
+
+
+        captchaProvider.setTokenGenerator(tokenGenerator);
+        captchaProvider.setAuthorizationService(authorizationService);
+        captchaProvider.setAuthenticationManager(authenticationManager);
+        captchaProvider.setRedisTemplate(redisTemplate);
+        captchaProvider.setCodeGenerator(codeGenerator);
+
+        oidcProvider.setAuthorizationService(authorizationService);
+
 
         return securityFilterChain;
-    }*/
+    }
 
 
     /**
@@ -265,9 +255,7 @@ public class AuthorizationServerConfig {
      */
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
-        return AuthorizationServerSettings.builder()
-                .issuer(customSecurityProperties.getIssuerUrl())
-                .build();
+        return AuthorizationServerSettings.builder().build();
     }
 
     /**
@@ -278,6 +266,16 @@ public class AuthorizationServerConfig {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
+    @Bean
+    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
+        JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
+
+        // 初始化 OAuth2 客户端
+        initMallAppClient(registeredClientRepository);
+        initMallAdminClient(registeredClientRepository);
+
+        return registeredClientRepository;
+    }
 
 
     @Bean
@@ -332,8 +330,78 @@ public class AuthorizationServerConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+        AuthenticationManager authenticationManager = authenticationConfiguration.getAuthenticationManager();
+        return authenticationManager;
     }
 
+    /**
+     * 初始化创建商城管理客户端
+     */
+    private void initMallAdminClient(JdbcRegisteredClientRepository registeredClientRepository) {
+
+        String clientId = "mall-admin";
+        String clientSecret = "123456";
+        String clientName = "商城管理客户端";
+
+        /*
+          如果使用明文，客户端认证时会自动升级加密方式，换句话说直接修改客户端密码，所以直接使用 bcrypt 加密避免不必要的麻烦
+          官方ISSUE： https://github.com/spring-projects/spring-authorization-server/issues/1099
+         */
+        String encodeSecret = passwordEncoder().encode(clientSecret);
+
+        RegisteredClient registeredMallAdminClient = registeredClientRepository.findByClientId(clientId);
+        String id = registeredMallAdminClient != null ? registeredMallAdminClient.getId() : UUID.randomUUID().toString();
+
+        RegisteredClient mallAppClient = RegisteredClient.withId(id)
+                .clientId(clientId)
+                .clientSecret(encodeSecret)
+                .clientName(clientName)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .authorizationGrantType(AuthorizationGrantType.PASSWORD) // 密码模式
+                .redirectUri("http://127.0.0.1:8080/authorized")
+                .postLogoutRedirectUri("http://127.0.0.1:8080/logged-out")
+                .scope(OidcScopes.OPENID)
+                .scope(OidcScopes.PROFILE)
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofDays(1)).build())
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+                .build();
+        registeredClientRepository.save(mallAppClient);
+    }
+
+    /**
+     * 初始化创建商城APP客户端
+     */
+    private void initMallAppClient(JdbcRegisteredClientRepository registeredClientRepository) {
+
+        String clientId = "mall-app";
+        String clientSecret = "123456";
+        String clientName = "商城APP客户端";
+
+        // 如果使用明文，在客户端认证的时候会自动升级加密方式，直接使用 bcrypt 加密避免不必要的麻烦
+        String encodeSecret = passwordEncoder().encode(clientSecret);
+
+        RegisteredClient registeredMallAppClient = registeredClientRepository.findByClientId(clientId);
+        String id = registeredMallAppClient != null ? registeredMallAppClient.getId() : UUID.randomUUID().toString();
+
+        RegisteredClient mallAppClient = RegisteredClient.withId(id)
+                .clientId(clientId)
+                .clientSecret(encodeSecret)
+                .clientName(clientName)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .redirectUri("http://127.0.0.1:8080/authorized")
+                .postLogoutRedirectUri("http://127.0.0.1:8080/logged-out")
+                .scope(OidcScopes.OPENID)
+                .scope(OidcScopes.PROFILE)
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofDays(1)).build())
+                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+                .build();
+        registeredClientRepository.save(mallAppClient);
+    }
 
 }

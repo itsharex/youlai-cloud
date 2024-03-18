@@ -5,6 +5,7 @@ import cn.hutool.captcha.generator.CodeGenerator;
 import cn.hutool.core.lang.Assert;
 import com.youlai.auth.util.OAuth2AuthenticationProviderUtils;
 import com.youlai.common.constant.RedisConstants;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -50,11 +51,21 @@ public class CaptchaAuthenticationProvider implements AuthenticationProvider {
 
     private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
     private static final OAuth2TokenType ID_TOKEN_TOKEN_TYPE = new OAuth2TokenType(OidcParameterNames.ID_TOKEN);
-    private final AuthenticationManager authenticationManager;
-    private final OAuth2AuthorizationService authorizationService;
-    private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
-    private final StringRedisTemplate redisTemplate;
-    private final CodeGenerator codeGenerator;
+    @Setter
+    private AuthenticationManager authenticationManager;
+    @Setter
+    private OAuth2AuthorizationService authorizationService;
+    @Setter
+    private OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
+    @Setter
+    private StringRedisTemplate redisTemplate;
+    @Setter
+    private CodeGenerator codeGenerator;
+
+    public CaptchaAuthenticationProvider(){
+
+    }
+
 
     /**
      * Constructs an {@code OAuth2ResourceOwnerPasswordAuthenticationProviderNew} using the provided parameters.

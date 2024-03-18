@@ -1,5 +1,6 @@
 package com.youlai.auth.oauth2.oidc;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -28,7 +29,11 @@ import java.util.function.Function;
 public class CustomOidcAuthenticationProvider implements AuthenticationProvider {
 
 
-    private final OAuth2AuthorizationService authorizationService;
+    @Setter
+    private  OAuth2AuthorizationService authorizationService;
+
+    public CustomOidcAuthenticationProvider() {
+    }
 
     public CustomOidcAuthenticationProvider(OAuth2AuthorizationService authorizationService) {
         Assert.notNull(authorizationService, "authorizationService cannot be null");

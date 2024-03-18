@@ -46,6 +46,3 @@ custom:
       - /error
       - /oauth2/consent/parameters
       - /favicon.ico
-logging:
-  level:
-    root: debug
